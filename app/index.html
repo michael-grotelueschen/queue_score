@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Queue Reality Check — Interconnection Withdrawal Risk</title>
+<link rel="stylesheet" href="style.css?v=20260624b">
+</head>
+<body>
+<header>
+  <h1>Queue Reality Check</h1>
+  <span class="sub">Withdrawal-risk predictions for active U.S. interconnection queue projects · LBNL “Queued Up” data</span>
+  <nav>
+    <a href="index.html" class="active">Explorer</a>
+    <a href="methodology.html">Methodology</a>
+  </nav>
+</header>
+<main>
+  <div class="cards" id="summaryCards"></div>
+
+  <div class="panel ahead">
+    <h2>How many projects ahead of me are real?</h2>
+    <p class="hint">Pick your region (and optionally state), enter your queue request date, and we’ll estimate how much of the queue ahead of you is likely to survive to commercial operation. Uses the per-project withdrawal probabilities below.</p>
+    <div class="filters">
+      <label>Region
+        <select id="aheadRegion"></select>
+      </label>
+      <label>State (optional)
+        <select id="aheadState"><option value="">All states</option></select>
+      </label>
+      <label>Your queue date
+        <input type="date" id="aheadDate" value="2024-06-30">
+      </label>
+      <button id="aheadBtn">Estimate</button>
+    </div>
+    <div class="ahead-result" id="aheadResult"></div>
+    <p class="ahead-note" id="aheadNote"></p>
+  </div>
+
+  <div class="panel">
+    <h2>Active project explorer</h2>
+    <div class="filters">
+      <label>Search
+        <input type="text" id="fSearch" placeholder="name, county, utility, queue id…">
+      </label>
+      <label>Region
+        <select id="fRegion"><option value="">All</option></select>
+      </label>
+      <label>State
+        <select id="fState"><option value="">All</option></select>
+      </label>
+      <label>Technology
+        <select id="fType"><option value="">All</option></select>
+      </label>
+      <label>IA executed
+        <select id="fIA">
+          <option value="">All</option>
+          <option value="1">Yes</option>
+          <option value="0">No</option>
+        </select>
+      </label>
+      <label>Min MW
+        <input type="number" id="fMinMW" min="0" step="10" style="min-width:80px">
+      </label>
+      <button id="fReset">Reset</button>
+    </div>
+    <p class="count-note" id="countNote"></p>
+    <table>
+      <thead>
+        <tr>
+          <th data-k="name">Project</th>
+          <th data-k="region">Region</th>
+          <th data-k="state">State</th>
+          <th data-k="type">Technology</th>
+          <th data-k="mw">MW</th>
+          <th data-k="q_year">Queue year</th>
+          <th data-k="ia_status">IA status</th>
+          <th data-k="p">P(withdrawn) <span class="arrow">▼</span></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <button class="showmore" id="showMore">Show 100 more</button>
+  </div>
+</main>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script src="app.js?v=20260624b"></script>
+</body>
+</html>

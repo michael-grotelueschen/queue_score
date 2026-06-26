@@ -1,0 +1,29 @@
+x# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# Claude Code local (personal) settings — a shared .claude/settings.json, if added, stays tracked
+.claude/settings.local.json
+
+# Large source data workbooks (~14 MB each, re-downloadable from LBNL; managed locally).
+# Delete this line if you'd rather commit the training data.
+data/*.xlsx
+
+# NOTE: the precomputed app artifacts (app/data/*.json, app/img/*.png) are intentionally
+# NOT ignored — the static site reads them directly, so they belong in the repo.

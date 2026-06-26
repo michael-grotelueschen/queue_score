@@ -1,0 +1,83 @@
+{
+ "generated": "2026-06-24",
+ "build": "2026-06-24T16:09:48",
+ "dataset": "LBNL Queued Up - complete interconnection queue dataset",
+ "main_model": "random forest",
+ "n_active": 8513,
+ "n_train": 16364,
+ "train_window": [
+  2000,
+  2018
+ ],
+ "time_split_year": 2014,
+ "train_withdrawal_rate": 0.7708,
+ "baseline": 0.7711,
+ "metrics": {
+  "rf": {
+   "holdout": {
+    "auc": 0.9554,
+    "brier": 0.0729,
+    "log_loss": 0.2306,
+    "ece": 0.055,
+    "mean_pred": 0.7731,
+    "base_rate": 0.7995
+   }
+  },
+  "logreg": {
+   "holdout": {
+    "auc": 0.9569,
+    "brier": 0.0688,
+    "log_loss": 0.2038,
+    "ece": 0.0244,
+    "mean_pred": 0.8111,
+    "base_rate": 0.7995
+   }
+  }
+ },
+ "importances": [
+  [
+   "ia_executed",
+   0.2501
+  ],
+  [
+   "region",
+   0.0372
+  ],
+  [
+   "log_mw",
+   0.0138
+  ],
+  [
+   "type_clean",
+   0.0119
+  ],
+  [
+   "state",
+   0.0115
+  ],
+  [
+   "service",
+   0.0097
+  ],
+  [
+   "q_year_clipped",
+   0.008
+  ],
+  [
+   "is_hybrid",
+   0.0025
+  ]
+ ],
+ "feature_labels": {
+  "region": "Region",
+  "state": "State",
+  "type_clean": "Technology",
+  "service": "Service type",
+  "log_mw": "Capacity (MW)",
+  "q_year_clipped": "Queue entry year",
+  "is_hybrid": "Hybrid project",
+  "ia_executed": "Interconnection agreement executed"
+ },
+ "active_mean_p": 0.8016,
+ "active_expected_survivors": 1688.6
+}

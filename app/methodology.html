@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methodology — Queue Reality Check</title>
+<link rel="stylesheet" href="style.css?v=20260624b">
+</head>
+<body>
+<header>
+  <h1>Queue Reality Check</h1>
+  <span class="sub">Withdrawal-risk predictions for active U.S. interconnection queue projects</span>
+  <nav>
+    <a href="index.html">Explorer</a>
+    <a href="methodology.html" class="active">Methodology</a>
+  </nav>
+</header>
+<main>
+<div class="prose">
+
+<h2>What this model does</h2>
+<p>
+For each <b id="nActive">…</b> active projects in U.S. interconnection queues, the model estimates the probability that the
+project will be <b>withdrawn before reaching commercial operation</b>. Historically, the large majority of
+interconnection requests are eventually withdrawn, so the practical question for a developer is not <i>whether</i>
+the queue ahead of them is inflated, but <i>by how much</i>, and <i>which</i> projects are most likely to fall away.
+</p>
+
+<h2>Data</h2>
+<p>
+Training data is the Lawrence Berkeley National Laboratory <a href="https://emp.lbl.gov/queues">“Queued Up”</a>
+complete interconnection-request dataset (latest edition, data through the end of 2025), which compiles queue
+records from the seven ISO/RTOs and ~50 non-ISO utilities (~98% of U.S. installed generating capacity). Each
+record includes queue entry date, region, state, county, technology, capacity, interconnection service type,
+study/IA status, and final disposition (operational, withdrawn, suspended, or still active).
+</p>
+
+<h2>Defining the training population: the censoring problem</h2>
+<p>
+A naive approach — train on every project with a known outcome — is badly biased. Recent queue cohorts that have
+already <i>resolved</i> are almost entirely withdrawals (96–99% for 2021–2025 entrants), because projects that succeed
+take a median of ~3.5 years (90th percentile ~8 years) to reach operation, while withdrawals happen fast. The
+successes from recent cohorts are still pending, so the resolved subset of recent cohorts is unrepresentative.
+</p>
+<figure style="margin:16px 0">
+<img id="censoringImg" src="img/censoring.png" alt="Line chart of resolution rate and withdrawal rate by queue entry year. The resolution rate falls sharply for cohorts after 2018, while the withdrawal rate among resolved projects climbs toward ~99% for recent cohorts.">
+<figcaption style="font-size:12.5px;color:var(--muted);margin-top:6px">
+Two rates per annual queue cohort: the <b>resolution rate</b> (resolved / cohort) and the <b>withdrawal rate</b>
+(withdrawn / resolved). For recent cohorts the resolution rate falls toward zero — those projects haven’t had time
+to resolve — while the few that <i>have</i> resolved are almost all withdrawals (the rate approaches ~99%). Training
+on the resolved subset of recent cohorts would therefore learn a near-certain-withdrawal prior. The shaded region
+(through 2018) is the training window, where cohorts are mostly resolved and the resolved subset is representative.
+</figcaption>
+</figure>
+<p>
+We therefore train only on projects that entered the queue between <b>2000 and 2018</b> and have resolved
+(withdrawn or operational): <b id="nTrain">…</b> projects, of which <b id="trainRate">…</b> were withdrawn.
+Cohorts through 2018 are ≥83% resolved, so the remaining censoring is small. Predictions for active projects are
+estimates of their <i>eventual</i> outcome under historical resolution patterns.
+</p>
+
+<h2>Features and leakage control</h2>
+<p>Every feature is observable for an active project today, with one subtlety handled explicitly:</p>
+<table>
+<thead><tr><th>Feature</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Region</td><td>ISO/RTO or non-ISO region (9 categories)</td></tr>
+<tr><td>State</td><td>Captures local permitting/siting conditions</td></tr>
+<tr><td>Technology</td><td>Solar, wind, battery, gas, hybrids, etc.</td></tr>
+<tr><td>Capacity (log MW)</td><td>Log-scaled nameplate capacity</td></tr>
+<tr><td>Service type</td><td>NRIS / ERIS / both / other</td></tr>
+<tr><td>Hybrid flag</td><td>Multi-technology projects (e.g., solar + battery)</td></tr>
+<tr><td>IA executed</td><td>Has the project signed an interconnection agreement? (see below)</td></tr>
+<tr><td>Queue entry year</td><td>Clipped to the 2000–2018 training range at prediction time (see limitations)</td></tr>
+</tbody>
+</table>
+<p>
+The raw dataset’s status field encodes the <i>final</i> state of resolved projects — “Withdrawn” and “Operational”
+are literally the label — so it cannot be used directly. We instead derive a single milestone indicator,
+<b>“reached IA execution”</b> (status of IA&nbsp;Executed / Construction / Operational, or an IA date on record).
+For a resolved project this means it signed an IA before resolving; for an active project it means it has signed one
+so far. Signing an interconnection agreement is the single strongest de-risking event in the data, and this
+cumulative “milestone reached” encoding is leakage-free. County, developer, and utility identities are excluded to
+avoid memorizing small-sample entities.
+</p>
+<p class="note">
+<b>A caveat that comes with this feature.</b> In the through-2025 data, <i>no</i> completed project lacks an executed
+IA, so among resolved projects “has not reached IA” coincides almost perfectly with eventual withdrawal. The model
+leans heavily on this signal: it is by far the largest contributor, and the majority of active projects — those
+without an executed IA — therefore receive a high withdrawal probability (typically ~95–99%) with little
+differentiation among them. That is faithful to the historical record but overstates certainty for genuinely
+early-stage projects that may yet sign an IA; see Limitations.
+</p>
+
+<h2>Model: a random forest</h2>
+<p>
+The main model is a <b>random forest</b> (400 trees; scikit-learn). It is a flexible ensemble that discriminates
+well on this feature set. Its predicted probabilities are used <b>as-is</b> — there is no post-hoc calibration
+step. A consequence: the raw random-forest probabilities are only roughly calibrated (a tree ensemble tends to pull
+scores toward the interior), so individual probabilities should be read as a well-ordered <i>risk score</i> more
+than an exactly-calibrated frequency. The headline aggregate (“expected survivors”) sums these probabilities and so
+inherits that approximation.
+</p>
+<p>
+Even though a random forest is not a glass-box model, every prediction in the explorer still carries an exact
+per-feature breakdown. We compute <b>SHAP contributions</b> (TreeExplainer, which is exact for tree ensembles) in
+probability space: a baseline equal to the average withdrawal rate, plus one contribution per feature, that sum
+<i>exactly</i> to the project’s predicted probability. Red contributions raise withdrawal risk, green lower it.
+</p>
+
+<h2>Evaluation: a single temporal holdout</h2>
+<p>
+The random forest (main model) and a <b>logistic regression</b> baseline (one-hot encoded categoricals,
+standardized numeric features) are trained on the identical feature set and evaluated on one <b>temporal
+holdout</b>: train on 2000–2014 entrants, test on 2015–2018 entrants — the realistic “predict the future” setting.
+We deliberately do <b>not</b> use k-fold cross-validation here: random folds mix queue cohorts across eras, and
+because withdrawal dynamics drift strongly over time, that lets a model “see the era” of its validation projects
+and overstates the skill that matters for forecasting today’s active queue.
+</p>
+<div id="metricsTables"></div>
+<p>
+On <b>discrimination</b> (AUC) the random forest and the logistic regression are essentially tied on the holdout;
+most of the predictable signal is structural (milestone reached, size, location, technology), so a linear model
+keeps pace. On <b>calibration</b> (ECE, Brier) the logistic regression’s raw probabilities are somewhat better
+behaved than the random forest’s, which is the expected cost of using the forest’s scores without a calibration
+step — a deliberate simplification. The random forest is kept as the main model for its flexibility and because its
+predictions come with exact SHAP explanations; the logistic regression is retained purely as a comparison.
+</p>
+<img id="evalImg" src="img/evaluation.png" alt="Left: reliability diagram comparing the raw random forest and logistic regression against the diagonal. Right: ROC curves for the random forest and logistic regression on the 2015–2018 temporal holdout.">
+
+<h2>What drives predictions</h2>
+<p class="hint" style="color:var(--muted);font-size:13px">Global feature importances (mean absolute SHAP contribution, in probability points, across active projects):</p>
+<div class="imp" id="importances"></div>
+
+<h2>Limitations — read before relying on this</h2>
+<div class="note">
+<ul style="margin:6px 0">
+<li><b>Queue-year extrapolation.</b> The model is trained on 2000–2018 entrants; for newer active projects the
+queue-year feature is clipped at 2018. Post-2018 queues are more crowded and withdrawal rates have likely risen,
+so predictions for recent entrants may be, if anything, <i>optimistic</i>.</li>
+<li><b>Early-stage conditioning — the dominant caveat.</b> Because no completed project in the data lacks an
+executed IA, the model treats “no IA reached” as near-certain withdrawal. The majority of active projects have not
+executed an IA and so receive a ~99% withdrawal probability with little differentiation among them. For genuinely
+early-stage projects that will eventually sign an IA, this <i>overstates</i> risk — these no-IA actives are the
+censored cases the model has no completed analogues for. Read individual predictions for no-IA projects as “high
+risk, undifferentiated,” and lean on the executed-IA subset for finer-grained ranking.</li>
+<li><b>Eventual, not dated, outcomes.</b> Probabilities describe whether a project will ever be withdrawn, not
+when it will resolve or when surviving projects reach operation.</li>
+<li><b>Policy regime shift.</b> FERC Order 2023 cluster reforms, tariff changes, and interconnection cost
+escalation post-date most of the training window.</li>
+<li><b>No project financials.</b> The data contains no information on offtake agreements, site control, or
+developer balance sheets — major real-world drivers of completion.</li>
+</ul>
+</div>
+
+<h2>Reproducing</h2>
+<p>
+The full pipeline is <code>model/train.py</code>: it loads the LBNL workbook, builds features, trains the random
+forest (main model) and a logistic-regression baseline, evaluates them on the temporal holdout, and exports
+<code>app/data/predictions.json</code> (per-project probabilities and exact SHAP feature contributions) and
+<code>app/data/model_meta.json</code> (metrics shown on this page).
+</p>
+
+</div>
+</main>
+<script>
+const fmtRow = (m) => `<td>${m.auc.toFixed(3)}</td><td>${m.brier.toFixed(4)}</td><td>${m.log_loss.toFixed(4)}</td><td>${m.ece.toFixed(4)}</td><td>${m.mean_pred.toFixed(3)} / ${m.base_rate.toFixed(3)}</td>`;
+fetch("data/model_meta.json?_=" + Date.now()).then(r => r.json()).then(meta => {
+  document.getElementById("nActive").textContent = meta.n_active.toLocaleString() + " of the";
+  document.getElementById("nTrain").textContent = meta.n_train.toLocaleString();
+  document.getElementById("trainRate").textContent = (100 * meta.train_withdrawal_rate).toFixed(1) + "%";
+
+  // Cache-bust the figures so regenerated images load without a hard refresh.
+  const ver = meta.build || meta.generated;
+  for (const [id, file] of [["censoringImg", "censoring.png"], ["evalImg", "evaluation.png"]]) {
+    document.getElementById(id).src = `img/${file}?v=${ver}`;
+  }
+
+  // [display label, model key, row style].
+  const modelRows = [
+    ["Random forest (main model)", "rf", "font-weight:600"],
+    ["Logistic regression (baseline)", "logreg", ""],
+  ];
+  document.getElementById("metricsTables").innerHTML = `
+    <h3>Temporal holdout (train ≤2014, test 2015–2018 entrants)</h3>
+    <table><thead><tr><th>Model</th><th>AUC ↑</th><th>Brier ↓</th><th>Log loss ↓</th><th>ECE ↓</th><th>Mean pred / base rate</th></tr></thead>
+    <tbody>
+      ${modelRows.map(([label, model, style]) =>
+        `<tr style="${style}"><td>${label}</td>${fmtRow(meta.metrics[model].holdout)}</tr>`
+      ).join("")}
+    </tbody></table>`;
+
+  const imp = meta.importances.slice(0, 14);
+  const labels = meta.feature_labels;
+  const pretty = (t) => labels[t] || t;
+  const maxV = imp[0][1];
+  document.getElementById("importances").innerHTML = imp.map(([t, v]) => `
+    <div class="term">
+      <span class="tl">${pretty(t)}</span>
+      <span class="bar"><i style="left:0;width:${(100 * v / maxV).toFixed(1)}%;background:var(--accent)"></i></span>
+      <span class="tv">${(100 * v).toFixed(1)}</span>
+    </div>`).join("");
+});
+</script>
+</body>
+</html>

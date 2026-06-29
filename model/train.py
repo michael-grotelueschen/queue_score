@@ -1,6 +1,6 @@
 """Train the interconnection-queue withdrawal-risk model and export the web app data.
 
-This script is the entire offline pipeline behind the "Queue Reality Check" web
+This script is the entire offline pipeline behind the "Queue Score" web
 app. It learns, from historical queue outcomes, the probability that an active
 interconnection request will be withdrawn before reaching commercial operation,
 then writes per-project predictions and model metadata that the static front end

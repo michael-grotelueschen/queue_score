@@ -1,4 +1,4 @@
-# Queue Reality Check
+# Queue Score
 
 Predicts the probability that each active project in U.S. interconnection queues
 will be **withdrawn before reaching commercial operation**, and presents the

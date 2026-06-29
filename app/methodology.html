@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Methodology — Queue Reality Check</title>
-<link rel="stylesheet" href="style.css?v=20260624b">
+<title>Methodology — Queue Score</title>
+<link rel="stylesheet" href="style.css?v=20260629">
 </head>
 <body>
 <header>
-  <h1>Queue Reality Check</h1>
+  <h1>Queue Score</h1>
   <span class="sub">Withdrawal-risk predictions for active U.S. interconnection queue projects</span>
   <nav>
     <a href="index.html">Explorer</a>
@@ -24,6 +24,12 @@ For each <b id="nActive">…</b> active projects in U.S. interconnection queues,
 project will be <b>withdrawn before reaching commercial operation</b>. Historically, the large majority of
 interconnection requests are eventually withdrawn, so the practical question for a developer is not <i>whether</i>
 the queue ahead of them is inflated, but <i>by how much</i>, and <i>which</i> projects are most likely to fall away.
+</p>
+
+<h2>How to reproduce this</h2>
+<p>
+The complete source code is available on
+<a href="https://github.com/michael-grotelueschen/queue_score">GitHub</a>.
 </p>
 
 <h2>Data</h2>
@@ -152,14 +158,6 @@ escalation post-date most of the training window.</li>
 developer balance sheets — major real-world drivers of completion.</li>
 </ul>
 </div>
-
-<h2>Reproducing</h2>
-<p>
-The full pipeline is <code>model/train.py</code>: it loads the LBNL workbook, builds features, trains the random
-forest (main model) and a logistic-regression baseline, evaluates them on the temporal holdout, and exports
-<code>app/data/predictions.json</code> (per-project probabilities and exact SHAP feature contributions) and
-<code>app/data/model_meta.json</code> (metrics shown on this page).
-</p>
 
 </div>
 </main>

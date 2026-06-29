@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Queue Score — Interconnection Withdrawal Risk</title>
-<link rel="stylesheet" href="style.css?v=20260629">
+<link rel="stylesheet" href="style.css?v=20260629b">
 </head>
 <body>
 <header>
   <h1>Queue Score</h1>
-  <span class="sub">Withdrawal-risk predictions for active U.S. interconnection queue projects</span>
+  <span class="sub">Withdrawal-risk predictions for active U.S. <span data-gloss="interconnection-queue">interconnection queue</span> projects</span>
   <nav>
     <a href="index.html" class="active">Explorer</a>
     <a href="methodology.html">Methodology</a>
@@ -20,7 +20,7 @@
 
   <div class="panel ahead">
     <h2>How many projects ahead of me are real?</h2>
-    <p class="hint">Pick your region (and optionally state), enter your queue request date, and we’ll estimate how much of the queue ahead of you is likely to survive to commercial operation. Uses the per-project withdrawal probabilities below.</p>
+    <p class="hint">Pick your region (and optionally state), enter your queue request date, and we’ll estimate how much of the queue ahead of you is likely to survive to <span data-gloss="commercial-operation">commercial operation</span>. Uses the per-project withdrawal probabilities below.</p>
     <div class="filters">
       <label>Region
         <select id="aheadRegion"></select>
@@ -52,7 +52,7 @@
       <label>Technology
         <select id="fType"><option value="">All</option></select>
       </label>
-      <label>IA executed
+      <label><span data-gloss="interconnection-agreement">IA executed</span>
         <select id="fIA">
           <option value="">All</option>
           <option value="1">Yes</option>
@@ -74,8 +74,8 @@
           <th data-k="type">Technology</th>
           <th data-k="mw">MW</th>
           <th data-k="q_year">Queue year</th>
-          <th data-k="ia_status">IA status</th>
-          <th data-k="p">P(withdrawn) <span class="arrow">▼</span></th>
+          <th data-k="ia_status"><span data-gloss="ia-status" class="r">IA status</span></th>
+          <th data-k="p"><span data-gloss="withdrawal-probability" class="r">P(withdrawn)</span> <span class="arrow">▼</span></th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -88,6 +88,6 @@
   <div class="modal" id="modal"></div>
 </div>
 
-<script src="app.js?v=20260629"></script>
+<script src="app.js?v=20260629b"></script>
 </body>
 </html>

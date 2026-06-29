@@ -86,6 +86,36 @@ main { max-width: 1280px; margin: 0 auto; padding: 22px 28px 60px; }
 }
 .filters button:hover { background: #e2e9ee; }
 
+/* glossary tooltips — on-hover definitions for industry jargon */
+.gloss { position: relative; border-bottom: 1px dotted currentColor; cursor: help; }
+.filters label .gloss { align-self: flex-start; }
+.gloss::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  z-index: 60;
+  width: max-content;
+  max-width: 260px;
+  padding: 8px 10px;
+  background: #102a36;
+  color: #fff;
+  font: 400 12.5px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: normal;
+  border-radius: 7px;
+  box-shadow: 0 6px 18px rgba(16, 42, 54, 0.28);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-3px);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  pointer-events: none;
+}
+.gloss.r::after { left: auto; right: 0; }
+.gloss:hover::after, .gloss:focus-visible::after { opacity: 1; visibility: visible; transform: translateY(0); }
+.gloss:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 .ahead-result {
   margin-top: 12px;
   display: grid;

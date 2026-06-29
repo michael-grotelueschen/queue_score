@@ -19,6 +19,42 @@ function probColor(p) {
   return "#2b8a3e";
 }
 
+// Plain-language definitions of the industry jargon that appears in the UI,
+// surfaced as on-hover tooltips. Single source of truth: static markup tags a
+// term with data-gloss="<key>" (wired up by applyGlossary); JS-rendered markup
+// wraps a term with g("<key>", "text").
+const GLOSSARY = {
+  "interconnection-queue":
+    "The waiting list a power project joins to connect to the electric grid. Operators study requests in turn to confirm the grid can absorb the new supply.",
+  "commercial-operation":
+    "The finish line — when a project is fully built and actively delivering power to the grid. Reaching it is the goal of every queued project.",
+  "interconnection-agreement":
+    "The binding contract (IA) a project signs with the grid operator, fixing the terms and cost of connecting. Signing one is the clearest sign a project is real.",
+  "ia-status":
+    "How far a project has gotten toward signing its interconnection agreement — the contract that lets it connect to the grid.",
+  "service-type":
+    "The kind of grid access requested. ERIS (energy) delivers power only when capacity is free; NRIS (network) is treated as firm capacity the grid plans around.",
+  "hybrid":
+    "A project pairing two technologies at one site — most often solar combined with battery storage.",
+  "withdrawal-probability":
+    "The model's estimated chance this project leaves the queue before ever reaching commercial operation.",
+};
+
+// Wrap a term inside JS-rendered HTML with its glossary tooltip.
+const g = (key, text) =>
+  `<span class="gloss" tabindex="0" data-tip="${esc(GLOSSARY[key] || "")}">${esc(text ?? key)}</span>`;
+
+// Attach tooltips to static markup tagged with data-gloss="<key>".
+function applyGlossary() {
+  document.querySelectorAll("[data-gloss]").forEach((el) => {
+    const def = GLOSSARY[el.dataset.gloss];
+    if (!def) return;
+    el.classList.add("gloss");
+    el.dataset.tip = def;
+    el.tabIndex = 0;
+  });
+}
+
 async function init() {
   // Always fetch the tiny metadata fresh, then cache-bust the large predictions
   // file by the data's generated date so a regenerated model loads on reload
@@ -28,6 +64,7 @@ async function init() {
   PROJECTS = (await pres.json()).projects;
 
   buildFilterOptions();
+  applyGlossary();
   bindEvents();
   applyFilters();
   renderSummary(PROJECTS, $("summaryCards"));
@@ -211,14 +248,14 @@ function openModal(p) {
     <div class="meta">${esc(p.region)} · ${esc(p.state)}${p.county ? " · " + esc(p.county) + " County" : ""}${p.utility ? " · " + esc(p.utility) : ""}${p.qid ? " · queue id " + esc(p.qid) : ""}</div>
     <div class="bigprob">
       <span class="v" style="color:${probColor(p.p)}">${pct(p.p)}</span>
-      <span class="t">random-forest probability this project is withdrawn before commercial operation</span>
+      <span class="t">random-forest probability this project is withdrawn before ${g("commercial-operation", "commercial operation")}</span>
     </div>
     <div class="factgrid">
-      <div><div class="k">Technology</div>${esc(p.type)}${p.hybrid ? " (hybrid)" : ""}</div>
+      <div><div class="k">Technology</div>${esc(p.type)}${p.hybrid ? ` (${g("hybrid", "hybrid")})` : ""}</div>
       <div><div class="k">Capacity</div>${fmt(p.mw)} MW</div>
       <div><div class="k">Queue entered</div>${p.q_date || "—"}${p.yrs_in_queue != null ? ` (${p.yrs_in_queue} yrs ago)` : ""}</div>
-      <div><div class="k">IA status</div>${esc(p.ia_status)}</div>
-      <div><div class="k">Service</div>${esc(p.service) || "—"}</div>
+      <div><div class="k">${g("ia-status", "IA status")}</div>${esc(p.ia_status)}</div>
+      <div><div class="k">${g("service-type", "Service")}</div>${esc(p.service) || "—"}</div>
     </div>
     <div class="explain">
       <h3>Why this prediction?</h3>

@@ -1,4 +1,4 @@
-# Project Plan — Queue Reality Check
+# Project Plan — Queue Score
 
 Withdrawal-risk predictions for active U.S. interconnection-queue projects, served
 as a static web app. This file tracks what is built and what comes next.

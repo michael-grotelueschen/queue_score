@@ -1,4 +1,4 @@
-/* Queue Reality Check — explorer logic (vanilla JS, no dependencies) */
+/* Queue Score — explorer logic (vanilla JS, no dependencies) */
 
 let PROJECTS = [];
 let META = null;
@@ -147,7 +147,7 @@ function renderTable() {
       <td>${fmt(p.mw)}</td>
       <td>${p.q_year ?? "—"}</td>
       <td>${esc(p.ia_status)}</td>
-      <td><span class="pbar"><span class="track"><span class="fill" style="width:${(100 * p.p).toFixed(0)}%;background:${probColor(p.p)}"></span></span><span class="pnum" style="color:${probColor(p.p)}">${pct(p.p)}</span></span></td>
+      <td><span class="pnum" style="color:${probColor(p.p)}">${pct(p.p)}</span></td>
     </tr>`
     )
     .join("");

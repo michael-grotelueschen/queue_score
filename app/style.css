@@ -67,17 +67,18 @@ main { max-width: 1280px; margin: 0 auto; padding: 22px 28px 60px; }
 .filters label { display: flex; flex-direction: column; font-size: 12px; color: var(--muted); gap: 3px; }
 .filters input, .filters select {
   font-size: 14px;
-  padding: 7px 9px;
+  height: 36px;
+  padding: 0 9px;
   border: 1px solid var(--line);
   border-radius: 7px;
   background: #fff;
   color: var(--ink);
-  min-width: 110px;
+  width: 180px;
 }
-.filters input[type="text"] { min-width: 230px; }
 .filters button, .ahead button {
   font-size: 14px;
-  padding: 8px 14px;
+  height: 36px;
+  padding: 0 14px;
   border: 1px solid var(--line);
   border-radius: 7px;
   background: #eef2f5;
@@ -102,9 +103,6 @@ th .arrow { font-size: 10px; }
 tbody tr { cursor: pointer; }
 tbody tr:hover { background: #f0f6f9; }
 
-.pbar { display: inline-flex; align-items: center; gap: 8px; min-width: 150px; }
-.pbar .track { width: 90px; height: 9px; border-radius: 5px; background: #e7edf2; overflow: hidden; }
-.pbar .fill { height: 100%; border-radius: 5px; }
 .pnum { font-variant-numeric: tabular-nums; font-weight: 600; }
 
 .showmore { margin: 14px auto 0; display: block; }
